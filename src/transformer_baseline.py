@@ -27,38 +27,16 @@ def load_frozen_model():
 def train():
     train_dataset, validation_dataset, _, tokenizer = prepare_data()
 
-    train_loader, validation_loader = create_dataloaders(
-        train_dataset,
-        validation_dataset,
-        tokenizer,
-        BATCH_SIZE
-    )
-
-    model = load_frozen_model()
+    train_loader, validation_loader = create_dataloaders(train_dataset, validation_dataset, tokenizer, BATCH_SIZE)
+    model = load_frozen_model() # encoder weights are frozen
     device = get_device()
     model.to(device)
-
-    optimizer = torch.optim.AdamW(
-        filter(
-            lambda parameter: parameter.requires_grad,
-            model.parameters()
-        ),
-        lr=LEARNING_RATE
-    )
+    optimizer = torch.optim.AdamW(filter(lambda parameter: parameter.requires_grad, model.parameters()),lr=LEARNING_RATE)
 
     for epoch in range(NUM_EPOCHS):
-        train_loss = train_one_epoch(
-            model,
-            train_loader,
-            optimizer,
-            device
-        )
 
-        validation_accuracy, validation_f1 = evaluate(
-            model,
-            validation_loader,
-            device
-        )
+        train_loss = train_one_epoch(model, train_loader, optimizer, device)
+        validation_accuracy, validation_f1 = evaluate(model, validation_loader, device)
 
         print(f"Epoch: {epoch + 1}")
         print(f"Train Loss: {train_loss:.4f}")
