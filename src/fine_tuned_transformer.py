@@ -4,24 +4,18 @@ from transformers import AutoModelForSequenceClassification
 from data import prepare_data
 from transformer_utils import (create_dataloaders, train_one_epoch, evaluate, get_device)
 
-
 MODEL_NAME = "distilbert-base-uncased"
 NUM_LABELS = 77
 BATCH_SIZE = 16
-LEARNING_RATE = 1e-3
-NUM_EPOCHS = 5
+LEARNING_RATE = 2e-5
+NUM_EPOCHS = 3
 
 
-def load_frozen_model():
-    model = AutoModelForSequenceClassification.from_pretrained(
+def load_model():
+    return AutoModelForSequenceClassification.from_pretrained(
         MODEL_NAME,
         num_labels=NUM_LABELS
     )
-
-    for parameter in model.distilbert.parameters():
-        parameter.requires_grad = False
-
-    return model
 
 
 def train():
@@ -34,15 +28,13 @@ def train():
         BATCH_SIZE
     )
 
-    model = load_frozen_model()
+    model = load_model()
+
     device = get_device()
     model.to(device)
 
     optimizer = torch.optim.AdamW(
-        filter(
-            lambda parameter: parameter.requires_grad,
-            model.parameters()
-        ),
+        model.parameters(),
         lr=LEARNING_RATE
     )
 
